@@ -1,0 +1,75 @@
+import pandas as pd
+import numpy as np
+
+#Reading the data file and the label file
+input = pd.read_csv("inputhw2.csv",header=None)
+label = pd.read_csv("labelshw2.csv",header=None)
+
+#Declaring intermediate lists
+k=[]
+X=[]
+Y=[]
+temp=[]
+
+#Converting the dataframes from pandas to numpy
+k1=input.to_numpy()
+k2=label.to_numpy()
+
+#Splitting each string row in the input data to individual strings and storing in list k
+for i in range(k1.size):
+    k.append(k1[i][0].split(' '))
+
+#Converting each string in the input data and lable data to list of integer
+for i in range(len(k)):
+    X.append(list(map(int,k[i])))
+    Y.append(list(map(int,k2[i])))
+
+#Appending 1 to each input X for compensating for bias term
+for i in range(len(k)):
+    X[i].append(1)
+
+#Declaring intital weight vectors for each of the 10 classes
+w=np.zeros((10,len(X[0])))
+
+#Converting the input X from list of lists to a numpy array
+X=np.array(X)
+
+#=====================================================================#
+#Training the weight vectors by running through 50% of the data 30 times
+#=====================================================================#
+for k in range(30):
+    for i in range(5000):
+        temp=[]
+        for j in range(len(w)):
+            temp.append(np.dot(X[i],w[j]))
+        """Checking if the maximum of the dot products equals laber, if not then
+        increaing the weight vector for the correct label by X and decreasing the
+        weight for the wrong predicted label by X"""
+        if temp.index(max(temp))!=Y[i][0]:
+            w[temp.index(max(temp))]=w[temp.index(max(temp))]-X[i]
+            w[Y[i][0]]=w[Y[i][0]]+X[i]
+#====================================================================#
+#Testing the other 50% of the data by the obtained weight vectors
+#====================================================================#
+temp=[]
+res=[]
+for i in range(5000,10000):
+    temp=[]
+    for j in range(len(w)):
+        temp.append(np.dot(X[i],w[j]))
+    # print(len(temp))
+    res.append((temp.index(max(temp))-Y[i][0]))
+print("Accuracy of test data is {}".format((res.count(0))/5000))
+
+#=====================================================================#
+#Testing the training data
+#=====================================================================#
+
+temp=[]
+res=[]
+for i in range(0,5000):
+    temp=[]
+    for j in range(len(w)):
+        temp.append(np.dot(X[i],w[j]))
+    res.append((temp.index(max(temp))-Y[i][0]))
+print("Accuracy of training data is {}".format((res.count(0))/5000))
